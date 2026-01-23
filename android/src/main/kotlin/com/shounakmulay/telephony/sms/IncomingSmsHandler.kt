@@ -1,5 +1,8 @@
 package com.shounakmulay.telephony.sms
 
+import android.os.Build
+import android.telephony.SubscriptionManager
+
 import android.app.ActivityManager
 import android.app.KeyguardManager
 import android.content.BroadcastReceiver
@@ -21,6 +24,7 @@ import com.shounakmulay.telephony.utils.Constants.SHARED_PREFS_BACKGROUND_MESSAG
 import com.shounakmulay.telephony.utils.Constants.SHARED_PREFS_BACKGROUND_SETUP_HANDLE
 import com.shounakmulay.telephony.utils.Constants.SHARED_PREFS_DISABLE_BACKGROUND_EXE
 import com.shounakmulay.telephony.utils.Constants.STATUS
+import com.shounakmulay.telephony.utils.Constants.SUBSCRIPTION_ID
 import com.shounakmulay.telephony.utils.Constants.TIMESTAMP
 import com.shounakmulay.telephony.utils.SmsAction
 import io.flutter.FlutterInjector
@@ -112,6 +116,16 @@ fun SmsMessage.toMap(): HashMap<String, Any?> {
         smsMap[ORIGINATING_ADDRESS] = originatingAddress
         smsMap[STATUS] = status.toString()
         smsMap[SERVICE_CENTER_ADDRESS] = serviceCenterAddress
+
+        val subId =   SubscriptionManager.getDefaultSubscriptionId()
+          //  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+          //      this.subscriptionId
+          //  } else {
+          //      SubscriptionManager.getDefaultSubscriptionId()
+          //  }
+
+        smsMap[SUBSCRIPTION_ID] = subId.toString()
+
     }
     return smsMap
 }
