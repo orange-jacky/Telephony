@@ -48,10 +48,16 @@ class IncomingSmsReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent?) {
         ContextHolder.applicationContext = context.applicationContext
+
+         val subId = intent?.getIntExtra(
+            SubscriptionManager.EXTRA_SUBSCRIPTION_INDEX,
+            SubscriptionManager.INVALID_SUBSCRIPTION_ID
+        ) ?: SubscriptionManager.INVALID_SUBSCRIPTION_ID
+
         val smsList = Telephony.Sms.Intents.getMessagesFromIntent(intent)
         val messagesGroupedByOriginatingAddress = smsList.groupBy { it.originatingAddress }
         messagesGroupedByOriginatingAddress.forEach { group ->
-            processIncomingSms(context, group.value)
+            processIncomingSms(context, group.value, subId)
         }
     }
 
@@ -65,8 +71,9 @@ class IncomingSmsReceiver : BroadcastReceiver() {
      * [IncomingSmsHandler.executeDartCallbackInBackgroundIsolate] with the SMS.
      *
      */
-    private fun processIncomingSms(context: Context, smsList: List<SmsMessage>) {
-        val messageMap = smsList.first().toMap()
+    private fun processIncomingSms(context: Context, smsList: List<SmsMessage>, subId: Int) {
+         val messageMap = smsList.first().toMap(subId)
+        // val messageMap = smsList.first().toMap()
         smsList.forEachIndexed { index, smsMessage ->
             if (index > 0) {
                 messageMap[MESSAGE_BODY] = (messageMap[MESSAGE_BODY] as String)
@@ -108,7 +115,7 @@ class IncomingSmsReceiver : BroadcastReceiver() {
 /**
  * Convert the [SmsMessage] to a [HashMap]
  */
-fun SmsMessage.toMap(): HashMap<String, Any?> {
+fun SmsMessage.toMap(subId: Int): HashMap<String, Any?> {
     val smsMap = HashMap<String, Any?>()
     this.apply {
         smsMap[MESSAGE_BODY] = messageBody
@@ -117,13 +124,14 @@ fun SmsMessage.toMap(): HashMap<String, Any?> {
         smsMap[STATUS] = status.toString()
         smsMap[SERVICE_CENTER_ADDRESS] = serviceCenterAddress
 
-        val subId =   SubscriptionManager.getDefaultSubscriptionId()
-          //  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-          //      this.subscriptionId
-          //  } else {
-          //      SubscriptionManager.getDefaultSubscriptionId()
-          //  }
+        // val subId =   SubscriptionManager.getDefaultSubscriptionId()
+        //   //  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+        //   //      this.subscriptionId
+        //   //  } else {
+        //   //      SubscriptionManager.getDefaultSubscriptionId()
+        //   //  }
 
+        // smsMap[SUBSCRIPTION_ID] = subId.toString()
         smsMap[SUBSCRIPTION_ID] = subId.toString()
 
     }
